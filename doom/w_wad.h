@@ -1,4 +1,4 @@
-// Emacs style mode select   -*- C++ -*- 
+// Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
 // $Id:$
@@ -28,6 +28,7 @@
 #pragma interface
 #endif
 
+#define MAX_WAD_NAME_LENGTH 0x08
 
 //
 // TYPES
@@ -35,10 +36,10 @@
 typedef struct
 {
     // Should be "IWAD" or "PWAD".
-    char		identification[4];		
+    char		identification[4];
     int			numlumps;
     int			infotableofs;
-    
+
 } wadinfo_t;
 
 
@@ -46,8 +47,8 @@ typedef struct
 {
     int			filepos;
     int			size;
-    char		name[8];
-    
+    char		name[MAX_WAD_NAME_LENGTH];
+
 } filelump_t;
 
 //
@@ -55,7 +56,7 @@ typedef struct
 //
 typedef struct
 {
-    char	name[8];
+    char	name[MAX_WAD_NAME_LENGTH];
     int		handle;
     int		position;
     int		size;
@@ -69,8 +70,8 @@ extern	int		numlumps;
 void    W_InitMultipleFiles (char** filenames);
 void    W_Reload (void);
 
-int	W_CheckNumForName (char* name);
-int	W_GetNumForName (char* name);
+int	W_CheckNumForName (const char* name);
+int	W_GetNumForName (const char* name);
 
 int	W_LumpLength (int lump);
 void    W_ReadLump (int lump, void *dest);

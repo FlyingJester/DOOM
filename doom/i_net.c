@@ -1,4 +1,4 @@
-// Emacs style mode select   -*- C++ -*- 
+// Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
 // $Id:$
@@ -51,6 +51,7 @@ rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
 
 
 
+#ifndef ntohl
 // For some odd reason...
 #define ntohl(x) \
         ((unsigned long int)((((unsigned long int)(x) & 0x000000ffU) << 24) | \
@@ -58,12 +59,21 @@ rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
                              (((unsigned long int)(x) & 0x00ff0000U) >>  8) | \
                              (((unsigned long int)(x) & 0xff000000U) >> 24)))
 
+#endif
+
+#ifndef ntohs
 #define ntohs(x) \
         ((unsigned short int)((((unsigned short int)(x) & 0x00ff) << 8) | \
                               (((unsigned short int)(x) & 0xff00) >> 8))) \
-	  
+
+#endif
+
+#ifndef htonl
 #define htonl(x) ntohl(x)
+#endif
+#ifndef htons
 #define htons(x) ntohs(x)
+#endif
 
 void	NetSend (void);
 boolean NetListen (void);
@@ -90,12 +100,12 @@ void	(*netsend) (void);
 int UDPsocket (void)
 {
     int	s;
-	
+
     // allocate a socket
     s = socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (s<0)
 	I_Error ("can't create socket: %s",strerror(errno));
-		
+
     return s;
 }
 
@@ -109,12 +119,12 @@ BindToLocalPort
 {
     int			v;
     struct sockaddr_in	address;
-	
+
     memset (&address, 0, sizeof(address));
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = port;
-			
+
     v = bind (s, (void *)&address, sizeof(address));
     if (v == -1)
 	I_Error ("BindToPort: bind: %s", strerror(errno));
@@ -128,7 +138,7 @@ void PacketSend (void)
 {
     int		c;
     doomdata_t	sw;
-				
+
     // byte swap
     sw.checksum = htonl(netbuffer->checksum);
     sw.player = netbuffer->player;
@@ -144,12 +154,12 @@ void PacketSend (void)
 	sw.cmds[c].chatchar = netbuffer->cmds[c].chatchar;
 	sw.cmds[c].buttons = netbuffer->cmds[c].buttons;
     }
-		
-    //printf ("sending %i\n",gametic);		
+
+    //printf ("sending %i\n",gametic);
     c = sendto (sendsocket , &sw, doomcom->datalength
 		,0,(void *)&sendaddress[doomcom->remotenode]
 		,sizeof(sendaddress[doomcom->remotenode]));
-	
+
     //	if (c == -1)
     //		I_Error ("SendPacket error: %s",strerror(errno));
 }
@@ -163,9 +173,9 @@ void PacketGet (void)
     int			i;
     int			c;
     struct sockaddr_in	fromaddress;
-    int			fromlen;
+    unsigned	fromlen;
     doomdata_t		sw;
-				
+
     fromlen = sizeof(fromaddress);
     c = recvfrom (insocket, &sw, sizeof(sw), 0
 		  , (struct sockaddr *)&fromaddress, &fromlen );
@@ -195,10 +205,10 @@ void PacketGet (void)
 	doomcom->remotenode = -1;		// no packet
 	return;
     }
-	
+
     doomcom->remotenode = i;			// good packet from a game player
     doomcom->datalength = c;
-	
+
     // byte swap
     netbuffer->checksum = ntohl(sw.checksum);
     netbuffer->player = sw.player;
@@ -229,11 +239,11 @@ int GetLocalAddress (void)
     v = gethostname (hostname, sizeof(hostname));
     if (v == -1)
 	I_Error ("GetLocalAddress : gethostname: errno %d",errno);
-	
+
     hostentry = gethostbyname (hostname);
     if (!hostentry)
 	I_Error ("GetLocalAddress : gethostbyname: couldn't get local host");
-		
+
     return *(int *)hostentry->h_addr_list[0];
 }
 
@@ -247,10 +257,10 @@ void I_InitNetwork (void)
     int			i;
     int			p;
     struct hostent*	hostentry;	// host information entry
-	
+
     doomcom = malloc (sizeof (*doomcom) );
     memset (doomcom, 0, sizeof(*doomcom) );
-    
+
     // set up for network
     i = M_CheckParm ("-dup");
     if (i && i< myargc-1)
@@ -263,19 +273,19 @@ void I_InitNetwork (void)
     }
     else
 	doomcom-> ticdup = 1;
-	
+
     if (M_CheckParm ("-extratic"))
 	doomcom-> extratics = 1;
     else
 	doomcom-> extratics = 0;
-		
+
     p = M_CheckParm ("-port");
     if (p && p<myargc-1)
     {
 	DOOMPORT = atoi (myargv[p+1]);
 	printf ("using alternate port %i\n",DOOMPORT);
     }
-    
+
     // parse network game options,
     //  -net <consoleplayer> <host> <host> ...
     i = M_CheckParm ("-net");
@@ -298,7 +308,7 @@ void I_InitNetwork (void)
     doomcom->consoleplayer = myargv[i+1][0]-'1';
 
     doomcom->numnodes = 1;	// this node for sure
-	
+
     i++;
     while (++i < myargc && myargv[i][0] != '-')
     {
@@ -306,7 +316,7 @@ void I_InitNetwork (void)
 	sendaddress[doomcom->numnodes].sin_port = htons(DOOMPORT);
 	if (myargv[i][0] == '.')
 	{
-	    sendaddress[doomcom->numnodes].sin_addr.s_addr 
+	    sendaddress[doomcom->numnodes].sin_addr.s_addr
 		= inet_addr (myargv[i]+1);
 	}
 	else
@@ -314,15 +324,15 @@ void I_InitNetwork (void)
 	    hostentry = gethostbyname (myargv[i]);
 	    if (!hostentry)
 		I_Error ("gethostbyname: couldn't find %s", myargv[i]);
-	    sendaddress[doomcom->numnodes].sin_addr.s_addr 
+	    sendaddress[doomcom->numnodes].sin_addr.s_addr
 		= *(int *)hostentry->h_addr_list[0];
 	}
 	doomcom->numnodes++;
     }
-	
+
     doomcom->id = DOOMCOM_ID;
     doomcom->numplayers = doomcom->numnodes;
-    
+
     // build message to receive
     insocket = UDPsocket ();
     BindToLocalPort (insocket,htons(DOOMPORT));

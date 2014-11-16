@@ -1,0 +1,36 @@
+Import("environment target")
+
+import os
+import sys
+
+localenv = environment.Clone()
+localenv.Append(LINKFLAGS=' -g ', CCFLAGS=' -g ')
+
+game      = localenv.StaticLibrary('doom_game',      ['am_map.c', 'd_items.c'])
+main      = localenv.StaticLibrary('doom_main',      ['d_main.c', 'doomdef.c', 'doomstat.c', 'dstrings.c', 'i_system.c', 'm_cheat.c'])
+animation = localenv.StaticLibrary('doom_animation', ['f_finale.c', 'f_wipe.c', 'p_ceiling.c', 'p_doors.c', 'p_enemy.c', 'p_floor.c',
+                                                         'p_inter.c', 'p_inter.c', 'p_inter.c', 'p_inter.c', 'p_lights.c', 'p_map.c',
+                                                         'p_maputl.c', 'p_mobj.c', 'p_plats.c', 'p_pspr.c', 'p_saveg.c', 'p_setup.c',
+                                                         'p_sight.c', 'p_spec.c', 'p_switch.c', 'p_telept.c', 'p_tick.c', 'p_user.c',
+                                                         'wi_stuff.c'])
+algorithm = localenv.StaticLibrary('doom_algorithm', ['m_fixed.c', 'm_random.c', 'm_swap.c', 'm_misc.c', 'r_bsp.c', 'r_data.c',
+                                                         'r_draw.c', 'r_main.c', 'r_plane.c', 'r_segs.c', 'r_sky.c', 'r_things.c',
+                                                         'tables.c', 'v_video.c'])
+hud       = localenv.StaticLibrary('doom_hud',       ['hu_lib.c', 'hu_stuff.c', 'st_stuff.c'])
+widget    = localenv.StaticLibrary('doom_widget',    ['m_menu.c', 'st_lib.c'])
+network   = localenv.StaticLibrary('doom_network',   ['d_net.c', 'i_net.c'])
+if False:
+    audio     = localenv.StaticLibrary('doom_audio',     ['i_sound.c', 's_sound.c', 'sounds.c'])
+else:
+    audio     = localenv.StaticLibrary('doom_audio',     ['dummy/i_sound.c', 'dummy/s_sound.c', 'sounds.c'])
+
+
+x11env = localenv.Clone()
+x11env.Append(CPPPATH=['/usr/X11R6/include', '/opt/x11/include/'], LIBPATH=['/usr/X11R6/lib', '/opt/X11/lib'], LIBS=['x11', 'xext'])
+x11       = x11env.StaticLibrary('doom_x11', ['i_video.c'])
+
+# Everything in misc should be put somewhere else. We just don't know where yet.
+misc      = localenv.StaticLibrary('doom_misc',   ['g_game.c', 'info.c', 'm_argv.c', 'm_bbox.c', 'w_wad.c', 'boom/z_zone.c'])
+
+if target=='posix' or target.startswith('win'):
+    doom = x11env.Program('doom', ['i_main.c'], LIBS=[game, main, animation, algorithm, hud, widget, network, audio, x11, misc, "x11", "xext"])

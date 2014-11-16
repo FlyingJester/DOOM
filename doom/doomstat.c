@@ -1,4 +1,4 @@
-// Emacs style mode select   -*- C++ -*- 
+// Emacs style mode select   -*- C++ -*-
 //-----------------------------------------------------------------------------
 //
 // $Id:$
@@ -14,42 +14,33 @@
 // FITNESS FOR A PARTICULAR PURPOSE. See the DOOM Source Code License
 // for more details.
 //
-// DESCRIPTION:
-//    Nil.
-//    
-//-----------------------------------------------------------------------------
-
-
-#ifndef __M_BBOX__
-#define __M_BBOX__
-
-#include <values.h>
-
-#include "m_fixed.h"
-
-
-// Bounding box coordinate storage.
-enum
-{
-    BOXTOP,
-    BOXBOTTOM,
-    BOXLEFT,
-    BOXRIGHT
-};	// bbox coordinates
-
-// Bounding box functions.
-void M_ClearBox (fixed_t*	box);
-
-void
-M_AddToBox
-( fixed_t*	box,
-  fixed_t	x,
-  fixed_t	y );
-
-
-#endif
-//-----------------------------------------------------------------------------
-//
 // $Log:$
 //
+// DESCRIPTION:
+//	Put all global state variables here.
+//
 //-----------------------------------------------------------------------------
+
+static const char
+rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
+
+
+#ifdef __GNUG__
+#pragma implementation "doomstat.h"
+#endif
+#include "doomstat.h"
+
+
+// Game Mode - identify IWAD as shareware, retail etc.
+GameMode_t gamemode = indetermined;
+GameMission_t	gamemission = doom;
+
+// Language.
+Language_t   language = english;
+
+// Set if homebrew PWAD stuff has been added.
+boolean	modifiedgame;
+
+
+
+
